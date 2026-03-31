@@ -201,7 +201,7 @@ function Sidebar({
           className={[
             "flex items-center gap-2 overflow-hidden",
             "transition-opacity duration-100",
-            expanded ? "opacity-100" : "opacity-0 pointer-events-none",
+            expanded ? "opacity-100" : "opacity-0 pointer-events-none w-0",
           ].join(" ")}
         >
           <DiligentMark size={26} />
