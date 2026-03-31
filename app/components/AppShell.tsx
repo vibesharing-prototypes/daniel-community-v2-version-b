@@ -22,14 +22,14 @@ type NavItemConfig = {
 // ── Nav config ───────────────────────────────────────────────────
 
 const PRIMARY_NAV: NavItemConfig[] = [
-  { id: "home", label: "Home", icon: "home" },
-  { id: "meetings", label: "Meetings", icon: "calendar_month" },
-  { id: "agenda", label: "Agenda items", icon: "checklist", badge: 3 },
-  { id: "policies", label: "Policies", icon: "gavel" },
-  { id: "library", label: "Library", icon: "folder_open" },
+  { id: "home",     label: "Home",         icon: "home" },
+  { id: "meetings", label: "Meetings",     icon: "calendar_month" },
+  { id: "agenda",   label: "Agenda items", icon: "checklist", badge: 3 },
+  { id: "policies", label: "Policies",     icon: "gavel" },
+  { id: "library",  label: "Library",      icon: "folder_open" },
 ];
 
-// ── Icon primitive ───────────────────────────────────────────────
+// ── Primitives ───────────────────────────────────────────────────
 
 function Icon({
   name,
@@ -51,6 +51,40 @@ function Icon({
   );
 }
 
+// ── Diligent D-blob mark (extracted from logo.svg) ───────────────
+
+function DiligentMark({ size = 26 }: { size?: number }) {
+  // Aspect ratio of the D-blob viewport: 201 × 222
+  const w = Math.round(size * (201 / 222));
+  return (
+    <svg
+      width={w}
+      height={size}
+      viewBox="0 0 201 222"
+      fill="none"
+      aria-hidden="true"
+    >
+      <path
+        d="M200.87,110.85c0,33.96-12.19,61.94-33.03,81.28c-0.24,0.21-0.42,0.43-0.66,0.64
+           c-15.5,14.13-35.71,23.52-59.24,27.11l-1.59-1.62l35.07-201.75l1.32-3.69
+           C178.64,30.36,200.87,65.37,200.87,110.85z"
+        fill="#EE312E"
+      />
+      <path
+        d="M142.75,12.83l-0.99,1.47L0.74,119.34L0,118.65c0,0,0-0.03,0-0.06V0.45
+           h85.63c5.91,0,11.64,0.34,17.19,1.01h0.21c14.02,1.66,26.93,5.31,38.48,10.78
+           C141.97,12.46,142.75,12.83,142.75,12.83z"
+        fill="#AF292E"
+      />
+      <path
+        d="M142.75,12.83L0,118.65v99.27v3.62h85.96c7.61,0,14.94-0.58,21.99-1.66
+           C107.95,219.89,142.75,12.83,142.75,12.83z"
+        fill="#D3222A"
+      />
+    </svg>
+  );
+}
+
 // ── Nav item ─────────────────────────────────────────────────────
 
 function NavItem({
@@ -60,6 +94,7 @@ function NavItem({
   badge,
   external = false,
   onClick,
+  expanded,
 }: {
   icon: string;
   label: string;
@@ -67,61 +102,158 @@ function NavItem({
   badge?: number;
   external?: boolean;
   onClick?: () => void;
+  expanded: boolean;
 }) {
   return (
-    <button
-      onClick={onClick}
-      className={[
-        "w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium",
-        "transition-colors duration-100 select-none",
-        active
-          ? "text-action-primary bg-selection"
-          : "text-type-muted hover:bg-selection-hover hover:text-type",
-      ].join(" ")}
-      style={
-        active ? { boxShadow: "inset 2px 0 0 var(--action-primary)" } : undefined
-      }
-    >
-      <Icon
-        name={icon}
-        size={20}
-        className={active ? "text-action-primary" : ""}
-      />
-      <span className="flex-1 text-left leading-snug truncate">{label}</span>
+    <div className="relative px-2 py-0.5">
+      <button
+        onClick={onClick}
+        title={!expanded ? label : undefined}
+        aria-current={active ? "page" : undefined}
+        className={[
+          "w-full rounded-full text-sm font-medium transition-colors duration-150 select-none",
+          expanded
+            ? "flex items-center gap-3 px-3 py-2"
+            : "flex items-center justify-center p-2.5",
+          active
+            ? "bg-selection text-action-primary"
+            : "text-type-muted hover:bg-selection-hover hover:text-type",
+        ].join(" ")}
+      >
+        <Icon
+          name={icon}
+          size={20}
+          className={active ? "text-action-primary" : ""}
+        />
 
-      {badge !== undefined && badge > 0 && (
-        <span className="bg-action-primary text-action-on-primary text-[10px] font-semibold rounded-full px-1.5 min-w-[18px] h-[18px] flex items-center justify-center leading-none shrink-0">
-          {badge > 99 ? "99+" : badge}
-        </span>
+        {expanded && (
+          <>
+            <span className="flex-1 text-left leading-snug truncate">
+              {label}
+            </span>
+            {badge !== undefined && badge > 0 && (
+              <span className="bg-action-primary text-action-on-primary text-[10px] font-semibold rounded-full px-1.5 min-w-[18px] h-[18px] flex items-center justify-center leading-none shrink-0">
+                {badge > 99 ? "99+" : badge}
+              </span>
+            )}
+            {external && (
+              <Icon
+                name="open_in_new"
+                size={14}
+                className="text-type-disabled opacity-70"
+              />
+            )}
+          </>
+        )}
+      </button>
+
+      {/* Badge dot when collapsed */}
+      {!expanded && badge !== undefined && badge > 0 && (
+        <span
+          className="absolute top-1 right-2.5 w-2 h-2 rounded-full bg-action-primary border-2 border-surface pointer-events-none"
+          aria-hidden="true"
+        />
       )}
-
-      {external && (
-        <Icon name="open_in_new" size={14} className="text-type-disabled opacity-70" />
-      )}
-    </button>
-  );
-}
-
-// ── Sidebar logo ─────────────────────────────────────────────────
-
-function SidebarLogo() {
-  return (
-    <div className="h-14 flex items-center px-4 border-b border-outline shrink-0 gap-3">
-      {/* Diligent brand mark */}
-      <div className="w-7 h-7 rounded flex items-center justify-center shrink-0 bg-[#C8102E]">
-        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
-          <path
-            d="M2 2h5.5C10.537 2 13 4.462 13 7s-2.463 5-5.5 5H2V2z"
-            fill="white"
-          />
-        </svg>
-      </div>
-      <span className="text-type font-semibold text-sm tracking-tight">Diligent</span>
     </div>
   );
 }
 
-// ── Icon button (header) ─────────────────────────────────────────
+// ── Sidebar ──────────────────────────────────────────────────────
+
+function Sidebar({
+  activePage,
+  onNavigate,
+  expanded,
+  onToggle,
+}: {
+  activePage: PageId;
+  onNavigate: (id: PageId) => void;
+  expanded: boolean;
+  onToggle: () => void;
+}) {
+  return (
+    <aside
+      className={[
+        "shrink-0 flex flex-col bg-surface border-r border-outline",
+        "overflow-hidden transition-[width] duration-200 ease-in-out",
+        expanded ? "w-[220px]" : "w-[60px]",
+      ].join(" ")}
+    >
+      {/* Logo row */}
+      <div
+        className={[
+          "h-14 flex items-center border-b border-outline shrink-0",
+          "gap-2.5",
+          expanded ? "px-3" : "justify-center px-0",
+        ].join(" ")}
+      >
+        {/* Hamburger */}
+        <button
+          onClick={onToggle}
+          aria-label={expanded ? "Collapse sidebar" : "Expand sidebar"}
+          className="w-8 h-8 flex items-center justify-center rounded-md text-type-muted hover:bg-selection-hover hover:text-type transition-colors shrink-0"
+        >
+          <Icon name="menu" size={20} />
+        </button>
+
+        {/* Brand — fades out before sidebar fully collapses */}
+        <div
+          className={[
+            "flex items-center gap-2 overflow-hidden",
+            "transition-opacity duration-100",
+            expanded ? "opacity-100" : "opacity-0 pointer-events-none",
+          ].join(" ")}
+        >
+          <DiligentMark size={26} />
+          <span className="text-type font-semibold text-sm tracking-tight whitespace-nowrap">
+            Diligent
+          </span>
+        </div>
+      </div>
+
+      {/* Primary nav */}
+      <nav
+        className="flex-1 py-2 overflow-y-auto overflow-x-hidden"
+        aria-label="Primary navigation"
+      >
+        {PRIMARY_NAV.map((item) => (
+          <NavItem
+            key={item.id}
+            icon={item.icon}
+            label={item.label}
+            badge={item.badge}
+            active={activePage === item.id}
+            expanded={expanded}
+            onClick={() => onNavigate(item.id)}
+          />
+        ))}
+      </nav>
+
+      {/* Utility nav */}
+      <div
+        className="shrink-0 border-t border-outline py-2"
+        aria-label="Utility navigation"
+      >
+        <NavItem
+          icon="settings"
+          label="Settings"
+          active={activePage === "settings"}
+          expanded={expanded}
+          onClick={() => onNavigate("settings")}
+        />
+        <NavItem
+          icon="open_in_new"
+          label="Public site"
+          external
+          expanded={expanded}
+          onClick={() => {}}
+        />
+      </div>
+    </aside>
+  );
+}
+
+// ── Header icon button ───────────────────────────────────────────
 
 function HeaderIconButton({
   icon,
@@ -158,34 +290,24 @@ function GlobalHeader({
 }) {
   return (
     <header className="h-14 shrink-0 flex items-center justify-between px-5 bg-surface border-b border-outline">
-      {/* Org name */}
       <button className="flex items-center gap-1 text-sm font-medium text-type hover:text-type-muted transition-colors">
         <span>Emerald City School District</span>
         <Icon name="expand_more" size={18} className="text-type-muted" />
       </button>
 
-      {/* Utility cluster */}
       <div className="flex items-center gap-0.5">
-        {/* Theme toggle — prototype helper */}
         <HeaderIconButton
           icon={darkMode ? "light_mode" : "dark_mode"}
           label={darkMode ? "Switch to light mode" : "Switch to dark mode"}
           onClick={onToggleDark}
         />
-
-        {/* Search */}
         <HeaderIconButton icon="search" label="Search" />
-
-        {/* Notifications */}
         <HeaderIconButton icon="notifications" label="Notifications">
-          {/* Unread dot */}
           <span
             className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-[#C8102E] border-2 border-surface"
             aria-hidden="true"
           />
         </HeaderIconButton>
-
-        {/* Avatar */}
         <button
           aria-label="Profile"
           className="ml-1 w-8 h-8 rounded-full bg-action-primary flex items-center justify-center text-action-on-primary text-xs font-semibold shrink-0 hover:opacity-90 transition-opacity"
@@ -197,87 +319,35 @@ function GlobalHeader({
   );
 }
 
-// ── Sidebar ──────────────────────────────────────────────────────
-
-function Sidebar({
-  activePage,
-  onNavigate,
-}: {
-  activePage: PageId;
-  onNavigate: (id: PageId) => void;
-}) {
-  return (
-    <aside className="w-[220px] shrink-0 flex flex-col bg-surface border-r border-outline">
-      <SidebarLogo />
-
-      {/* Primary nav */}
-      <nav className="flex-1 py-2 overflow-y-auto" aria-label="Primary navigation">
-        {PRIMARY_NAV.map((item) => (
-          <NavItem
-            key={item.id}
-            icon={item.icon}
-            label={item.label}
-            badge={item.badge}
-            active={activePage === item.id}
-            onClick={() => onNavigate(item.id)}
-          />
-        ))}
-      </nav>
-
-      {/* Utility nav */}
-      <div className="shrink-0 border-t border-outline py-2" aria-label="Utility navigation">
-        <NavItem
-          icon="settings"
-          label="Settings"
-          active={activePage === "settings"}
-          onClick={() => onNavigate("settings")}
-        />
-        <NavItem
-          icon="open_in_new"
-          label="Public site"
-          external
-          onClick={() => {}}
-        />
-      </div>
-    </aside>
-  );
-}
-
 // ── Page placeholder ─────────────────────────────────────────────
 
 const PAGE_META: Record<PageId, { title: string; breadcrumb: string }> = {
-  home: { title: "Home", breadcrumb: "Home" },
-  meetings: { title: "Meetings", breadcrumb: "Meetings" },
-  agenda: { title: "Agenda items", breadcrumb: "Agenda items" },
-  policies: { title: "Policies", breadcrumb: "Policies" },
-  library: { title: "Library", breadcrumb: "Library" },
-  settings: { title: "Settings", breadcrumb: "Settings" },
+  home:     { title: "Home",         breadcrumb: "Home" },
+  meetings: { title: "Meetings",     breadcrumb: "Meetings" },
+  agenda:   { title: "Agenda items", breadcrumb: "Agenda items" },
+  policies: { title: "Policies",     breadcrumb: "Policies" },
+  library:  { title: "Library",      breadcrumb: "Library" },
+  settings: { title: "Settings",     breadcrumb: "Settings" },
 };
 
 function PagePlaceholder({ page }: { page: PageId }) {
   const meta = PAGE_META[page];
+  const navIcon = PRIMARY_NAV.find((n) => n.id === page)?.icon ?? "grid_view";
   return (
     <div className="p-8 max-w-5xl">
-      {/* Breadcrumb */}
       <div className="flex items-center gap-1.5 text-xs text-type-muted mb-5">
-        <span className="hover:text-type cursor-pointer transition-colors">Community v2</span>
+        <span className="hover:text-type cursor-pointer transition-colors">
+          Community v2
+        </span>
         <Icon name="chevron_right" size={14} className="text-type-disabled" />
         <span className="text-type">{meta.breadcrumb}</span>
       </div>
-
-      {/* Page title */}
       <h1 className="text-2xl font-semibold text-type mb-6 tracking-tight">
         {meta.title}
       </h1>
-
-      {/* Placeholder card */}
       <div className="rounded-lg border border-outline bg-surface p-12 flex flex-col items-center justify-center gap-3 text-center">
         <div className="w-10 h-10 rounded-full bg-selection flex items-center justify-center">
-          <Icon
-            name={PRIMARY_NAV.find((n) => n.id === page)?.icon ?? "grid_view"}
-            size={20}
-            className="text-action-primary"
-          />
+          <Icon name={navIcon} size={20} className="text-action-primary" />
         </div>
         <p className="text-sm font-medium text-type">{meta.title}</p>
         <p className="text-xs text-type-muted">Content coming soon</p>
@@ -290,7 +360,8 @@ function PagePlaceholder({ page }: { page: PageId }) {
 
 export default function AppShell({ children }: { children?: React.ReactNode }) {
   const [activePage, setActivePage] = useState<PageId>("home");
-  const [darkMode, setDarkMode] = useState(false);
+  const [darkMode, setDarkMode]     = useState(false);
+  const [sidebarExpanded, setSidebarExpanded] = useState(true);
 
   useEffect(() => {
     document.documentElement.classList.toggle("dark", darkMode);
@@ -298,8 +369,12 @@ export default function AppShell({ children }: { children?: React.ReactNode }) {
 
   return (
     <div className="flex h-screen overflow-hidden bg-background-base">
-      <Sidebar activePage={activePage} onNavigate={setActivePage} />
-
+      <Sidebar
+        activePage={activePage}
+        onNavigate={setActivePage}
+        expanded={sidebarExpanded}
+        onToggle={() => setSidebarExpanded((v) => !v)}
+      />
       <div className="flex flex-col flex-1 min-w-0">
         <GlobalHeader
           darkMode={darkMode}
